@@ -6,8 +6,8 @@
     <title>Barış Bugün Çalışıyor mu?</title>
     <style>
         body {
-            /* MANUAL CHANGE: #28a745 for YES (Green) | #dc3545 for NO (Red) */
-            background-color: #dc3545; 
+            /* MANUAL CHANGE: #28a745 for EVET | #dc3545 for HAYIR */
+            background-color: #28a745; 
             
             display: flex;
             flex-direction: column;
@@ -15,21 +15,27 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             color: white;
             text-align: center;
+            transition: background-color 0.4s ease;
         }
 
-        h1 {
-            font-size: 3.5rem;
-            margin-bottom: 10px;
-            font-weight: 500;
+        h1 { font-size: 3rem; margin-bottom: 0; font-weight: 500; }
+        
+        .status { font-size: 9rem; font-weight: 900; margin: 10px 0; }
+
+        .shift-details {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            display: none; /* JS ile kontrol edilecek */
         }
 
-        .status {
-            font-size: 10rem;
-            font-weight: 900;
-        }
+        .shift-details p { margin: 5px 0; }
+        .label { font-weight: bold; opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -37,7 +43,25 @@
     <h1>Barış bugün çalışıyor mu?</h1>
     
     <!-- MANUAL CHANGE: EVET or HAYIR -->
-    <div class="status">HAYIR</div>
+    <div id="statusDisplay" class="status">EVET</div>
+
+    <!-- Shift Info Section -->
+    <div id="shiftInfo" class="shift-details">
+        <p><span class="label">Giriş:</span> 08.05.2026 - 20:30</p>
+        <p><span class="label">Çıkış:</span> 09.05.2026 - 08:30</p>
+    </div>
+
+    <script>
+        // Basit if condition kontrolü
+        const statusText = document.getElementById('statusDisplay').innerText;
+        const shiftSection = document.getElementById('shiftInfo');
+
+        if (statusText === "EVET") {
+            shiftSection.style.display = "block";
+        } else {
+            shiftSection.style.display = "none";
+        }
+    </script>
 
 </body>
 </html>
