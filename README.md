@@ -1,29 +1,46 @@
-# Barış Şu An Çalışıyor mu? 🛠️
-
-Bu proje, bir Elektrik Mühendisi olarak vardiyalı çalışma düzenimi (12/36 ve gündüz vardiyaları) anlık olarak takip eden ve ziyaretçilere çalışma durumumu gösteren dinamik bir web sayfasıdır.
-
-### 🔗 Canlı Site
-[Siteye Gitmek İçin Tıkla](https://barisakcay.github.io/)
+# Barış Akçay | Working Status 🛠️
 
 ---
 
-## 🚀 Özellikler
-- **Anlık Durum:** Çalışma saatlerindeyken "EVET" (Yeşil), mesai dışındayken "HAYIR" (Kırmızı) gösterir.
-- **Canlı Geri Sayım:** Mesainin bitmesine veya yeni mesainin başlamasına kalan süreyi saniyelik olarak gösterir.
-- **Türkiye Saat Dilimi:** Dünyanın neresinden girilirse girilsin, hesaplamaları Türkiye saatine (UTC+3) göre yapar.
-- **Dinamik Veri:** Verileri her ay başında güncellenen bir `schedule.csv` dosyasından çeker.
-- **Önbellek Yönetimi:** Dosya güncellendiğinde tarayıcı önbelleğine takılmadan en güncel veriyi anında yükler.
+## 🇹🇷 Türkçe
 
-## 📁 Kullanım ve Güncelleme
-Mesai takvimi `schedule.csv` dosyası üzerinden yönetilir. Excel üzerinden güncellenirken şu format korunmalıdır:
+Bu proje, bir Elektrik Mühendisi olarak vardiyalı çalışma düzenimi anlık takip eden ve ziyaretçilere çalışma durumumu gösteren dinamik bir web sayfasıdır.
 
-| start_date | start_time | end_date | end_time |
-| :--- | :--- | :--- | :--- |
-| GG.AA.YYYY | SS:DD | GG.AA.YYYY | SS:DD |
+### 🔗 Canlı Site
+[https://barisakcay.github.io/](https://barisakcay.github.io/)
 
-*Not: Excel'den dışa aktarırken ayırıcı olarak noktalı virgül (`;`) kullanılmalıdır.*
+### 🚀 Özellikler
+- **Anlık Durum:** Mesai saatlerinde **EVET** (Yeşil), mesai dışında **HAYIR** (Kırmızı) gösterir.
+- **Canlı Geri Sayım:** Mesai bitimine veya başlangıcına kalan süreyi saniyelik gösterir.
+- **Sabit Saat Dilimi:** Hesaplamalar cihazdan bağımsız olarak Türkiye saatine (UTC+3) göredir.
+- **Dinamik Veri:** Verileri `schedule.csv` dosyasından her zaman en güncel haliyle çeker.
 
-## 💻 Teknik Detaylar
-- **Dil:** HTML5, CSS3, JavaScript (Vanilla JS)
-- **Sunucu:** GitHub Pages
-- **Veri Formatı:** CSV (Comma Separated Values)
+### 📁 Veri Formatı
+Takvim `schedule.csv` üzerinden güncellenir. Excel'den aktarırken **noktalı virgül (;)** kullanılmalıdır:
+`start_date;start_time;end_date;end_time`
+
+---
+
+## 🇺🇸 English
+
+A dynamic web page that tracks my shift schedule as an Electrical Engineer in real-time and displays my current working status.
+
+### 🔗 Live Site
+[https://barisakcay.github.io/](https://barisakcay.github.io/)
+
+### 🚀 Features
+- **Real-Time Status:** Displays **YES** (Green) during shifts and **NO** (Red) during off-hours.
+- **Live Countdown:** A second-by-second countdown to the end or start of the shift.
+- **Fixed Time Zone:** Calculations are pinned to Turkey Time (UTC+3) regardless of device location.
+- **Dynamic Fetching:** Always pulls the most recent version of the `schedule.csv` file.
+
+### 📁 Data Structure
+The schedule is managed via `schedule.csv`. Use **semicolon (;)** as a delimiter when exporting:
+`start_date;start_time;end_date;end_time`
+
+---
+
+## 💻 Tech Stack
+- **Frontend:** HTML5, CSS3, Vanilla JavaScript
+- **Deployment:** GitHub Pages
+- **Data:** CSV Parsing
