@@ -3,65 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barış Bugün Çalışıyor mu?</title>
+    <title>Barış Şu An Çalışıyor mu?</title>
     <style>
         body {
-            /* MANUAL CHANGE: #28a745 for EVET | #dc3545 for HAYIR */
-            background-color: #28a745; 
-            
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            color: white;
-            text-align: center;
-            transition: background-color 0.4s ease;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; color: white;
+            text-align: center; transition: background-color 0.8s ease;
         }
-
-        h1 { font-size: 3rem; margin-bottom: 0; font-weight: 500; }
-        
-        .status { font-size: 9rem; font-weight: 900; margin: 10px 0; }
-
-        .shift-details {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            font-size: 1.2rem;
-            display: none; /* JS ile kontrol edilecek */
+        .status-title { font-size: 2.5rem; margin-bottom: 0; opacity: 0.9; }
+        .status-value { font-size: 8rem; font-weight: 900; margin: 10px 0; }
+        .info-card {
+            background: rgba(0, 0, 0, 0.2); padding: 25px; border-radius: 20px;
+            backdrop-filter: blur(10px); margin-top: 20px; min-width: 300px;
         }
-
-        .shift-details p { margin: 5px 0; }
-        .label { font-weight: bold; opacity: 0.9; }
+        .info-line { font-size: 1.1rem; margin: 8px 0; display: flex; justify-content: space-between; }
+        .label { font-weight: bold; margin-right: 15px; opacity: 0.8; }
     </style>
 </head>
 <body>
 
-    <h1>Barış bugün çalışıyor mu?</h1>
-    
-    <!-- MANUAL CHANGE: EVET or HAYIR -->
-    <div id="statusDisplay" class="status">EVET</div>
+    <p class="status-title">Barış şu an çalışıyor mu?</p>
+    <div id="status" class="status-value">Yükleniyor...</div>
 
-    <!-- Shift Info Section -->
-    <div id="shiftInfo" class="shift-details">
-        <p><span class="label">Giriş:</span> 08.05.2026 - 20:30</p>
-        <p><span class="label">Çıkış:</span> 09.05.2026 - 08:30</p>
+    <div id="card" class="info-card">
+        <div id="content"></div>
     </div>
 
     <script>
-        // Basit if condition kontrolü
-        const statusText = document.getElementById('statusDisplay').innerText;
-        const shiftSection = document.getElementById('shiftInfo');
-
-        if (statusText === "EVET") {
-            shiftSection.style.display = "block";
-        } else {
-            shiftSection.style.display = "none";
+        function parseDateTime(dateStr, timeStr) {
+            const [d, m, y] = dateStr.split('.');
+            const [hr, min] = timeStr.split(':');
+            return new Date(y, m - 1, d, hr, min);
         }
-    </script>
 
+        async function updateLiveStatus() {
+            try {
+                const response = await fetch('schedule.csv');
+                const text = await response.text();
+                const shifts = text.split('\n').slice(1).filter(r => r.trim() !== "").map(row => {
+                    const cols = row.split(',');
+                    return {
+                        start: parseDateTime(cols[0], cols[1]),
+                        end: parseDateTime(cols[2], cols[3]),
+                        startStr: `${cols[0]} ${cols[1]}`,
+                        endStr: `${cols[2]} ${cols[3]}`
+                    };
+                });
+
+                const now = new Date();
+                const statusDiv = document.getElementById('status');
+                const contentDiv = document.getElementById('content');
+                
+                // 1. Şu an işte miyim?
+                const currentShift = shifts.find(s => now >= s.start && now <= s.end);
+
+                if (currentShift) {
+                    // EVET DURUMU
+                    statusDiv.innerText = "EVET";
+                    document.body.style.backgroundColor = "#28a745";
+                    contentDiv.innerHTML = `
+                        <div class="info-line"><span class="label">Mesai Başlangıcı:</span><span>${currentShift.startStr}</span></div>
+                        <div class="info-line"><span class="label">Mesai Bitişi:</span><span>${currentShift.endStr}</span></div>
+                    `;
+                } else {
+                    // HAYIR DURUMU
+                    statusDiv.innerText = "HAYIR";
+                    document.body.style.backgroundColor = "#dc3545";
+
+                    // Bir önceki ve bir sonraki mesaiyi bul
+                    const pastShifts = shifts.filter(s => now > s.end).sort((a, b) => b.end - a.end);
+                    const futureShifts = shifts.filter(s => now < s.start).sort((a, b) => a.start - b.start);
+
+                    const lastShift = pastShifts[0];
+                    const nextShift = futureShifts[0];
+
+                    contentDiv.innerHTML = `
+                        <div style="margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:10px;">
+                            <div class="info-line" style="font-size:0.9rem; opacity:0.7;">SON MESAİ</div>
+                            <div class="info-line"><span>${lastShift ? lastShift.endStr : '-'}</span> tarihinde çıktı.</div>
+                        </div>
+                        <div>
+                            <div class="info-line" style="font-size:0.9rem; opacity:0.7;">GELECEK MESAİ</div>
+                            <div class="info-line"><span>${nextShift ? nextShift.startStr : '-'}</span> tarihinde girecek.</div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                statusDiv.innerText = "HATA";
+                console.error(e);
+            }
+        }
+
+        updateLiveStatus();
+        setInterval(updateLiveStatus, 60000); // Her dakikada bir kontrol et
+    </script>
 </body>
 </html>
