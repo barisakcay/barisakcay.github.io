@@ -3,7 +3,7 @@
 Bu proje, bir Elektrik Mühendisi olarak vardiyalı çalışma düzenimi (12/36 ve gündüz vardiyaları) anlık olarak takip eden ve ziyaretçilere çalışma durumumu gösteren dinamik bir web sayfasıdır.
 
 ### 🔗 Canlı Site
-[Siteye Gitmek İçin Tıkla](barisakcay.github.io)
+[Siteye Gitmek İçin Tıkla](https://barisakcay.github.io/)
 
 ---
 
