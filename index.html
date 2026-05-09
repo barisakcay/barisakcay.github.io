@@ -17,19 +17,25 @@
             background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 24px;
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             margin-top: 20px; min-width: 320px; border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
         }
         .info-line { font-size: 1.1rem; margin: 12px 0; display: flex; justify-content: space-between; }
         .label { font-weight: bold; margin-right: 20px; opacity: 0.7; font-size: 0.9rem; text-transform: uppercase; }
         .time-val { font-family: 'Courier New', monospace; font-weight: bold; }
+        .timezone-badge {
+            margin-top: 15px; font-size: 0.75rem; opacity: 0.6; font-style: italic;
+            border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <p class="status-title">Barış bugün çalışıyor mu?</p>
+    <p class="status-title">Barış şu an çalışıyor mu?</p>
     <div id="status" class="status-value">...</div>
 
     <div id="card" class="info-card">
         <div id="content">Veriler yükleniyor...</div>
+        <div class="timezone-badge">Veriler Türkiye saat dilimine (UTC+3) göredir.</div>
     </div>
 
     <script>
@@ -37,14 +43,13 @@
             if(!dateStr || !timeStr) return null;
             const [d, m, y] = dateStr.trim().split('.');
             const [hr, min] = timeStr.trim().split(':');
-            return new Date(parseInt(y), parseInt(m) - 1, parseInt(d), parseInt(hr), parseInt(min));
+            return new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}T${hr.padStart(2,'0')}:${min.padStart(2,'0')}:00+03:00`);
         }
 
         async function updateLiveStatus() {
             try {
                 const response = await fetch('schedule.csv');
                 const text = await response.text();
-                // Noktalı virgül (;) ayırıcısına göre parçalıyoruz
                 const rows = text.split('\n').slice(1).filter(r => r.trim() !== "");
                 
                 const shifts = rows.map(row => {
@@ -57,11 +62,12 @@
                     };
                 }).filter(s => s.start !== null);
 
-                const now = new Date();
+                const nowInTR = new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Istanbul"}));
+                
                 const statusDiv = document.getElementById('status');
                 const contentDiv = document.getElementById('content');
                 
-                const currentShift = shifts.find(s => now >= s.start && now <= s.end);
+                const currentShift = shifts.find(s => nowInTR >= s.start && nowInTR <= s.end);
 
                 if (currentShift) {
                     statusDiv.innerText = "EVET";
@@ -74,8 +80,8 @@
                     statusDiv.innerText = "HAYIR";
                     document.body.style.backgroundColor = "#dc3545";
 
-                    const pastShifts = shifts.filter(s => now > s.end).sort((a, b) => b.end - a.end);
-                    const futureShifts = shifts.filter(s => now < s.start).sort((a, b) => a.start - b.start);
+                    const pastShifts = shifts.filter(s => nowInTR > s.end).sort((a, b) => b.end - a.end);
+                    const futureShifts = shifts.filter(s => nowInTR < s.start).sort((a, b) => a.start - b.start);
 
                     const lastShift = pastShifts[0];
                     const nextShift = futureShifts[0];
@@ -93,12 +99,12 @@
                 }
             } catch (e) {
                 statusDiv.innerText = "HATA";
-                document.getElementById('content').innerText = "Dosya okunamadı.";
+                document.getElementById('content').innerText = "Dosya veya saat hatası.";
             }
         }
 
         updateLiveStatus();
-        setInterval(updateLiveStatus, 30000); // 30 saniyede bir kontrol
+        setInterval(updateLiveStatus, 30000);
     </script>
 </body>
 </html>
