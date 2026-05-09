@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barış Şu An Çalışıyor mu? | Is Barış Working Now?</title>
+    <title>Barış Akçay | Working Status</title>
     <style>
         body {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -11,12 +11,21 @@
             text-align: center; transition: background-color 0.8s ease;
             background-color: #333;
         }
-        .status-title { font-size: 1.6rem; margin-bottom: 0; opacity: 0.9; line-height: 1.2; }
-        .status-value { font-size: 7rem; font-weight: 900; margin: 5px 0; letter-spacing: -2px; }
+        .status-title { font-size: 1.4rem; margin-bottom: 0; opacity: 0.8; line-height: 1.2; }
+        
+        /* Boyut küçültüldü: 7rem -> 4.5rem */
+        .status-value { 
+            font-size: 4.5rem; 
+            font-weight: 900; 
+            margin: 15px 0; 
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
         
         .countdown-container {
-            font-size: 1.4rem; font-weight: 600; margin-bottom: 20px;
-            background: rgba(255, 255, 255, 0.15); padding: 10px 25px; border-radius: 50px;
+            font-size: 1.3rem; font-weight: 600; margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.15); padding: 12px 25px; border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .info-card {
@@ -26,13 +35,13 @@
         }
         .info-line { font-size: 1rem; margin: 12px 0; display: flex; justify-content: space-between; align-items: center; }
         .label-group { text-align: left; display: flex; flex-direction: column; }
-        .label-tr { font-weight: bold; opacity: 0.9; font-size: 0.85rem; text-transform: uppercase; }
-        .label-en { font-weight: normal; opacity: 0.6; font-size: 0.7rem; text-transform: uppercase; }
+        .label-tr { font-weight: bold; opacity: 0.9; font-size: 0.8rem; text-transform: uppercase; }
+        .label-en { font-weight: normal; opacity: 0.6; font-size: 0.65rem; text-transform: uppercase; }
         
         .time-val { font-family: 'Courier New', monospace; font-weight: bold; font-size: 1.1rem; }
         
         .timezone-badge {
-            margin-top: 15px; font-size: 0.7rem; opacity: 0.5; font-style: italic;
+            margin-top: 15px; font-size: 0.65rem; opacity: 0.5; font-style: italic;
             border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;
             display: flex; flex-direction: column; gap: 2px;
         }
@@ -40,13 +49,13 @@
 </head>
 <body>
 
-    <p class="status-title">Barış şu an çalışıyor mu?<br><span style="font-size: 1.2rem; opacity: 0.7;">Is Barış working now?</span></p>
+    <p class="status-title">Barış şu an çalışıyor mu?<br><span style="font-size: 1rem; opacity: 0.6;">Is Barış working now?</span></p>
     <div id="status" class="status-value">...</div>
 
     <div id="countdown" class="countdown-container" style="display: none;"></div>
 
     <div id="card" class="info-card">
-        <div id="content">Veriler yükleniyor... / Loading data...</div>
+        <div id="content">Yükleniyor... / Loading...</div>
         <div class="timezone-badge">
             <span>Veriler Türkiye saat dilimine (UTC+3) göredir.</span>
             <span>Data is based on Turkey time zone (UTC+3).</span>
