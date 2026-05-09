@@ -7,70 +7,73 @@
     <style>
         body {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; color: white;
+            height: 100vh; margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; color: white;
             text-align: center; transition: background-color 0.8s ease;
+            background-color: #333;
         }
-        .status-title { font-size: 2.5rem; margin-bottom: 0; opacity: 0.9; }
-        .status-value { font-size: 8rem; font-weight: 900; margin: 10px 0; }
+        .status-title { font-size: 2rem; margin-bottom: 0; opacity: 0.9; }
+        .status-value { font-size: 8rem; font-weight: 900; margin: 10px 0; letter-spacing: -2px; }
         .info-card {
-            background: rgba(0, 0, 0, 0.2); padding: 25px; border-radius: 20px;
-            backdrop-filter: blur(10px); margin-top: 20px; min-width: 300px;
+            background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 24px;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            margin-top: 20px; min-width: 320px; border: 1px solid rgba(255,255,255,0.1);
         }
-        .info-line { font-size: 1.1rem; margin: 8px 0; display: flex; justify-content: space-between; }
-        .label { font-weight: bold; margin-right: 15px; opacity: 0.8; }
+        .info-line { font-size: 1.1rem; margin: 12px 0; display: flex; justify-content: space-between; }
+        .label { font-weight: bold; margin-right: 20px; opacity: 0.7; font-size: 0.9rem; text-transform: uppercase; }
+        .time-val { font-family: 'Courier New', monospace; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <p class="status-title">Barış şu an çalışıyor mu?</p>
-    <div id="status" class="status-value">Yükleniyor...</div>
+    <p class="status-title">Barış bugün çalışıyor mu?</p>
+    <div id="status" class="status-value">...</div>
 
     <div id="card" class="info-card">
-        <div id="content"></div>
+        <div id="content">Veriler yükleniyor...</div>
     </div>
 
     <script>
         function parseDateTime(dateStr, timeStr) {
-            const [d, m, y] = dateStr.split('.');
-            const [hr, min] = timeStr.split(':');
-            return new Date(y, m - 1, d, hr, min);
+            if(!dateStr || !timeStr) return null;
+            const [d, m, y] = dateStr.trim().split('.');
+            const [hr, min] = timeStr.trim().split(':');
+            return new Date(parseInt(y), parseInt(m) - 1, parseInt(d), parseInt(hr), parseInt(min));
         }
 
         async function updateLiveStatus() {
             try {
                 const response = await fetch('schedule.csv');
                 const text = await response.text();
-                const shifts = text.split('\n').slice(1).filter(r => r.trim() !== "").map(row => {
-                    const cols = row.split(',');
+                // Noktalı virgül (;) ayırıcısına göre parçalıyoruz
+                const rows = text.split('\n').slice(1).filter(r => r.trim() !== "");
+                
+                const shifts = rows.map(row => {
+                    const cols = row.split(';');
                     return {
                         start: parseDateTime(cols[0], cols[1]),
                         end: parseDateTime(cols[2], cols[3]),
                         startStr: `${cols[0]} ${cols[1]}`,
                         endStr: `${cols[2]} ${cols[3]}`
                     };
-                });
+                }).filter(s => s.start !== null);
 
                 const now = new Date();
                 const statusDiv = document.getElementById('status');
                 const contentDiv = document.getElementById('content');
                 
-                // 1. Şu an işte miyim?
                 const currentShift = shifts.find(s => now >= s.start && now <= s.end);
 
                 if (currentShift) {
-                    // EVET DURUMU
                     statusDiv.innerText = "EVET";
                     document.body.style.backgroundColor = "#28a745";
                     contentDiv.innerHTML = `
-                        <div class="info-line"><span class="label">Mesai Başlangıcı:</span><span>${currentShift.startStr}</span></div>
-                        <div class="info-line"><span class="label">Mesai Bitişi:</span><span>${currentShift.endStr}</span></div>
+                        <div class="info-line"><span class="label">Giriş:</span><span class="time-val">${currentShift.startStr}</span></div>
+                        <div class="info-line"><span class="label">Çıkış:</span><span class="time-val">${currentShift.endStr}</span></div>
                     `;
                 } else {
-                    // HAYIR DURUMU
                     statusDiv.innerText = "HAYIR";
                     document.body.style.backgroundColor = "#dc3545";
 
-                    // Bir önceki ve bir sonraki mesaiyi bul
                     const pastShifts = shifts.filter(s => now > s.end).sort((a, b) => b.end - a.end);
                     const futureShifts = shifts.filter(s => now < s.start).sort((a, b) => a.start - b.start);
 
@@ -78,24 +81,24 @@
                     const nextShift = futureShifts[0];
 
                     contentDiv.innerHTML = `
-                        <div style="margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:10px;">
-                            <div class="info-line" style="font-size:0.9rem; opacity:0.7;">SON MESAİ</div>
-                            <div class="info-line"><span>${lastShift ? lastShift.endStr : '-'}</span> tarihinde çıktı.</div>
+                        <div style="margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+                            <div class="label" style="text-align:left; margin-bottom:5px;">Son Mesai Bitişi</div>
+                            <div class="time-val" style="font-size:1.2rem;">${lastShift ? lastShift.endStr : 'Kayıt Yok'}</div>
                         </div>
                         <div>
-                            <div class="info-line" style="font-size:0.9rem; opacity:0.7;">GELECEK MESAİ</div>
-                            <div class="info-line"><span>${nextShift ? nextShift.startStr : '-'}</span> tarihinde girecek.</div>
+                            <div class="label" style="text-align:left; margin-bottom:5px;">Gelecek Mesai Başlangıcı</div>
+                            <div class="time-val" style="font-size:1.2rem;">${nextShift ? nextShift.startStr : 'Planlanmadı'}</div>
                         </div>
                     `;
                 }
             } catch (e) {
                 statusDiv.innerText = "HATA";
-                console.error(e);
+                document.getElementById('content').innerText = "Dosya okunamadı.";
             }
         }
 
         updateLiveStatus();
-        setInterval(updateLiveStatus, 60000); // Her dakikada bir kontrol et
+        setInterval(updateLiveStatus, 30000); // 30 saniyede bir kontrol
     </script>
 </body>
 </html>
