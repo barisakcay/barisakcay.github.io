@@ -6,110 +6,117 @@
     <title>Barış Akçay | Status</title>
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --accent-color: #dc3545; /* Varsayılan Kırmızı */
-            --glass: rgba(255, 255, 255, 0.1);
+            --bg-color: #0f0f0f;
+            --accent-color: #ff3b30;
+            --glass: rgba(255, 255, 255, 0.03);
+            --text-main: #ffffff;
+            --text-dim: #888888;
         }
 
         body {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             min-height: 100vh; margin: 0; 
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: white; text-align: center;
+            font-family: 'SF Pro Display', -apple-system, system-ui, sans-serif;
+            color: var(--text-main); text-align: center;
             background-color: var(--bg-color);
-            transition: background-color 1s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.8s ease;
             overflow: hidden;
         }
 
-        /* Arka plan gradyan efekti */
+        /* Dil Seçici (Lang Switcher) */
+        .lang-container {
+            position: absolute; top: 30px;
+            background: var(--glass); padding: 4px; border-radius: 12px;
+            display: flex; gap: 4px; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .lang-btn {
+            padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer;
+            background: transparent; color: var(--text-dim); font-size: 0.8rem; font-weight: 600;
+            transition: all 0.3s;
+        }
+        .lang-btn.active {
+            background: rgba(255,255,255,0.1); color: white;
+        }
+
         .bg-glow {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 500px; height: 500px; border-radius: 50%;
+            width: 400px; height: 400px; border-radius: 50%;
             background: var(--accent-color);
-            filter: blur(120px); opacity: 0.15; z-index: -1;
-            transition: background 1s ease;
+            filter: blur(100px); opacity: 0.1; z-index: -1;
+            transition: all 1s ease;
         }
 
-        .container {
-            width: 90%; max-width: 450px; z-index: 1;
-        }
-
-        .header-box { margin-bottom: 40px; }
-        
-        .status-title { 
-            font-size: 0.9rem; font-weight: 500; letter-spacing: 2px;
-            text-transform: uppercase; opacity: 0.6; margin-bottom: 10px;
-        }
-
-        .status-value { 
-            font-size: 3.5rem; font-weight: 800; margin: 0;
-            letter-spacing: -1px; line-height: 1;
-        }
-
-        .countdown-box {
-            margin-top: 15px; font-size: 1.2rem; font-weight: 300;
-            font-variant-numeric: tabular-nums; opacity: 0.9;
-        }
+        .status-header { margin-bottom: 50px; }
+        .status-val { font-size: 4rem; font-weight: 800; letter-spacing: -2px; margin: 0; }
+        .countdown { font-size: 1.1rem; font-weight: 300; margin-top: 10px; color: var(--text-dim); }
 
         .info-card {
-            background: var(--glass);
-            padding: 30px; border-radius: 32px;
+            background: var(--glass); width: 85vw; max-width: 380px;
+            border-radius: 28px; padding: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            margin-top: 40px;
         }
 
-        .shift-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 0;
+        .info-row {
+            display: flex; justify-content: space-between; align-items: center; padding: 16px 0;
         }
-        .shift-row:first-child { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .info-row:first-child { border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        .label-wrap { text-align: left; }
-        .label-main { font-size: 0.85rem; font-weight: 600; display: block; }
-        .label-sub { font-size: 0.65rem; opacity: 0.5; text-transform: uppercase; }
+        .label { font-size: 0.8rem; color: var(--text-dim); font-weight: 500; text-align: left; }
+        .value { text-align: right; }
+        .v-date { font-size: 1rem; font-weight: 600; display: block; font-family: monospace; }
+        .v-time { font-size: 0.85rem; color: var(--text-dim); }
 
-        .time-wrap { text-align: right; }
-        .date-val { font-size: 0.95rem; font-weight: 600; display: block; font-family: 'Courier New', monospace; }
-        .time-val { font-size: 0.8rem; opacity: 0.6; }
-
-        .footer-note {
-            margin-top: 30px; font-size: 0.65rem; opacity: 0.4;
-            line-height: 1.5; font-weight: 400;
-        }
-
-        /* Mobil Optimizasyon */
-        @media (max-width: 400px) {
-            .status-value { font-size: 2.8rem; }
-            .info-card { padding: 20px; }
-        }
+        .footer { position: absolute; bottom: 30px; font-size: 0.7rem; color: var(--text-dim); opacity: 0.5; }
     </style>
 </head>
 <body>
 
-    <div class="bg-glow" id="glow"></div>
-
-    <div class="container">
-        <div class="header-box">
-            <div class="status-title">Barış Akçay</div>
-            <h1 id="status" class="status-value">...</h1>
-            <div id="countdown" class="countdown-box"></div>
-        </div>
-
-        <div class="info-card">
-            <div id="content">
-                </div>
-        </div>
-
-        <div class="footer-note">
-            Veriler Türkiye saat dilimine (UTC+3) göredir.<br>
-            Data is based on Turkey time zone (UTC+3).
-        </div>
+    <div class="lang-container">
+        <button class="lang-btn active" onclick="setLang('tr')">TR</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
     </div>
 
+    <div class="bg-glow" id="glow"></div>
+
+    <div class="status-header">
+        <h1 id="status-val" class="status-val">...</h1>
+        <div id="countdown" class="countdown"></div>
+    </div>
+
+    <div class="info-card" id="content-card">
+        </div>
+
+    <div class="footer" id="footer-text">Veriler Türkiye saat dilimine göredir (UTC+3)</div>
+
     <script>
+        let currentLang = 'tr';
         let allShifts = [];
+
+        const translations = {
+            tr: {
+                on: "MESAİDE", off: "MÜSAİT", 
+                nextIn: "Gelecek mesaiye: ", endIn: "Mesai bitimine: ",
+                last: "Son Mesai Bitişi", next: "Gelecek Mesai Başlangıcı",
+                start: "Mesai Başlangıcı", end: "Mesai Bitişi",
+                footer: "Veriler Türkiye saat dilimine göredir (UTC+3)"
+            },
+            en: {
+                on: "ON SHIFT", off: "AVAILABLE",
+                nextIn: "Next shift in: ", endIn: "Shift ends in: ",
+                last: "Last Shift Ended", next: "Next Shift Starts",
+                start: "Shift Start", end: "Shift End",
+                footer: "Data is based on Turkey time zone (UTC+3)"
+            }
+        };
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.toLowerCase() === lang);
+            });
+            updateDisplay();
+        }
 
         function parseDateTime(dateStr, timeStr) {
             if(!dateStr || !timeStr) return null;
@@ -126,63 +133,51 @@
         }
 
         async function loadData() {
-            try {
-                const response = await fetch('schedule.csv?v=' + new Date().getTime());
-                const text = await response.text();
-                const rows = text.split('\n').slice(1).filter(r => r.trim() !== "");
-                allShifts = rows.map(row => {
-                    const cols = row.split(';');
-                    return {
-                        start: parseDateTime(cols[0], cols[1]),
-                        end: parseDateTime(cols[2], cols[3]),
-                        sDate: cols[0], sTime: cols[1], eDate: cols[2], eTime: cols[3]
-                    };
-                }).filter(s => s.start !== null);
-                updateDisplay();
-            } catch (e) { document.getElementById('status').innerText = "ERROR"; }
+            const response = await fetch('schedule.csv?v=' + new Date().getTime());
+            const text = await response.text();
+            const rows = text.split('\n').slice(1).filter(r => r.trim() !== "");
+            allShifts = rows.map(row => {
+                const cols = row.split(';');
+                return {
+                    start: parseDateTime(cols[0], cols[1]),
+                    end: parseDateTime(cols[2], cols[3]),
+                    sD: cols[0], sT: cols[1], eD: cols[2], eT: cols[3]
+                };
+            }).filter(s => s.start !== null);
+            updateDisplay();
         }
 
         function updateDisplay() {
             const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Istanbul"}));
-            const statusDiv = document.getElementById('status');
-            const countdownDiv = document.getElementById('countdown');
-            const contentDiv = document.getElementById('content');
-            const glow = document.getElementById('glow');
-
+            const t = translations[currentLang];
             const current = allShifts.find(s => now >= s.start && now <= s.end);
+            
+            document.getElementById('footer-text').innerText = t.footer;
 
             if (current) {
-                statusDiv.innerText = "MESAI / ON SHIFT";
-                document.body.style.backgroundColor = "#0d1f12"; // Koyu Yeşil Teması
-                document.documentElement.style.setProperty('--accent-color', '#28a745');
-                const timeLeft = current.end - now;
-                countdownDiv.innerText = "Ending in: " + formatDuration(timeLeft);
-                contentDiv.innerHTML = renderRow("Giriş / Start", current.sDate, current.sTime) + renderRow("Çıkış / End", current.eDate, current.eTime);
+                document.getElementById('status-val').innerText = t.on;
+                document.documentElement.style.setProperty('--accent-color', '#34c759');
+                document.getElementById('countdown').innerText = t.endIn + formatDuration(current.end - now);
+                renderCard(t.start, current.sD, current.sT, t.end, current.eD, current.eT);
             } else {
-                statusDiv.innerText = "OFF / MÜSAİT";
-                document.body.style.backgroundColor = "#1a1a1a"; // Koyu Gri Teması
-                document.documentElement.style.setProperty('--accent-color', '#dc3545');
+                document.getElementById('status-val').innerText = t.off;
+                document.documentElement.style.setProperty('--accent-color', '#ff3b30');
                 const next = allShifts.filter(s => now < s.start).sort((a,b) => a.start - b.start)[0];
                 const last = allShifts.filter(s => now > s.end).sort((a,b) => b.end - a.end)[0];
-                
-                countdownDiv.innerText = next ? "Next shift in: " + formatDuration(next.start - now) : "";
-                contentDiv.innerHTML = renderRow("Son Mesai / Last", last?.eDate, last?.eTime) + renderRow("Gelecek / Next", next?.sDate, next?.sTime);
+                document.getElementById('countdown').innerText = next ? t.nextIn + formatDuration(next.start - now) : "";
+                renderCard(t.last, last?.eD, last?.eT, t.next, next?.sD, next?.sT);
             }
         }
 
-        function renderRow(label, date, time) {
-            if(!date) return "";
-            const labels = label.split(' / ');
-            return `
-                <div class="shift-row">
-                    <div class="label-wrap">
-                        <span class="label-main">${labels[0]}</span>
-                        <span class="label-sub">${labels[1]}</span>
-                    </div>
-                    <div class="time-wrap">
-                        <span class="date-val">${date}</span>
-                        <span class="time-val">${time}</span>
-                    </div>
+        function renderCard(l1, d1, t1, l2, d2, t2) {
+            document.getElementById('content-card').innerHTML = `
+                <div class="info-row">
+                    <div class="label">${l1}</div>
+                    <div class="value"><span class="v-date">${d1 || '-'}</span><span class="v-time">${t1 || '-'}</span></div>
+                </div>
+                <div class="info-row">
+                    <div class="label">${l2}</div>
+                    <div class="value"><span class="v-date">${d2 || '-'}</span><span class="v-time">${t2 || '-'}</span></div>
                 </div>`;
         }
 
