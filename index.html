@@ -11,19 +11,24 @@
             text-align: center; transition: background-color 0.8s ease;
             background-color: #333;
         }
-        .status-title { font-size: 2rem; margin-bottom: 0; opacity: 0.9; }
-        .status-value { font-size: 8rem; font-weight: 900; margin: 10px 0; letter-spacing: -2px; }
+        .status-title { font-size: 1.8rem; margin-bottom: 0; opacity: 0.9; }
+        .status-value { font-size: 7rem; font-weight: 900; margin: 5px 0; letter-spacing: -2px; }
+        
+        .countdown-container {
+            font-size: 1.5rem; font-weight: 600; margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.15); padding: 10px 20px; border-radius: 50px;
+        }
+
         .info-card {
             background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 24px;
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            margin-top: 20px; min-width: 320px; border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
+            min-width: 320px; border: 1px solid rgba(255,255,255,0.1);
         }
-        .info-line { font-size: 1.1rem; margin: 12px 0; display: flex; justify-content: space-between; }
-        .label { font-weight: bold; margin-right: 20px; opacity: 0.7; font-size: 0.9rem; text-transform: uppercase; }
+        .info-line { font-size: 1rem; margin: 10px 0; display: flex; justify-content: space-between; }
+        .label { font-weight: bold; opacity: 0.7; font-size: 0.8rem; text-transform: uppercase; }
         .time-val { font-family: 'Courier New', monospace; font-weight: bold; }
         .timezone-badge {
-            margin-top: 15px; font-size: 0.75rem; opacity: 0.6; font-style: italic;
+            margin-top: 15px; font-size: 0.7rem; opacity: 0.5; font-style: italic;
             border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;
         }
     </style>
@@ -33,12 +38,16 @@
     <p class="status-title">Barış şu an çalışıyor mu?</p>
     <div id="status" class="status-value">...</div>
 
+    <div id="countdown" class="countdown-container" style="display: none;"></div>
+
     <div id="card" class="info-card">
         <div id="content">Veriler yükleniyor...</div>
         <div class="timezone-badge">Veriler Türkiye saat dilimine (UTC+3) göredir.</div>
     </div>
 
     <script>
+        let allShifts = [];
+
         function parseDateTime(dateStr, timeStr) {
             if(!dateStr || !timeStr) return null;
             const [d, m, y] = dateStr.trim().split('.');
@@ -46,13 +55,22 @@
             return new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}T${hr.padStart(2,'0')}:${min.padStart(2,'0')}:00+03:00`);
         }
 
-        async function updateLiveStatus() {
+        function formatDuration(ms) {
+            if (ms < 0) return "00:00:00";
+            const hours = Math.floor(ms / (1000 * 60 * 60));
+            const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        async function loadData() {
             try {
+                // TAM İSTEDİĞİN GİBİ: Gecikmeyi önleyen dinamik URL
                 const response = await fetch('schedule.csv?v=' + new Date().getTime());
                 const text = await response.text();
                 const rows = text.split('\n').slice(1).filter(r => r.trim() !== "");
                 
-                const shifts = rows.map(row => {
+                allShifts = rows.map(row => {
                     const cols = row.split(';');
                     return {
                         start: parseDateTime(cols[0], cols[1]),
@@ -61,50 +79,67 @@
                         endStr: `${cols[2]} ${cols[3]}`
                     };
                 }).filter(s => s.start !== null);
-
-                const nowInTR = new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Istanbul"}));
                 
-                const statusDiv = document.getElementById('status');
-                const contentDiv = document.getElementById('content');
-                
-                const currentShift = shifts.find(s => nowInTR >= s.start && nowInTR <= s.end);
-
-                if (currentShift) {
-                    statusDiv.innerText = "EVET";
-                    document.body.style.backgroundColor = "#28a745";
-                    contentDiv.innerHTML = `
-                        <div class="info-line"><span class="label">Giriş:</span><span class="time-val">${currentShift.startStr}</span></div>
-                        <div class="info-line"><span class="label">Çıkış:</span><span class="time-val">${currentShift.endStr}</span></div>
-                    `;
-                } else {
-                    statusDiv.innerText = "HAYIR";
-                    document.body.style.backgroundColor = "#dc3545";
-
-                    const pastShifts = shifts.filter(s => nowInTR > s.end).sort((a, b) => b.end - a.end);
-                    const futureShifts = shifts.filter(s => nowInTR < s.start).sort((a, b) => a.start - b.start);
-
-                    const lastShift = pastShifts[0];
-                    const nextShift = futureShifts[0];
-
-                    contentDiv.innerHTML = `
-                        <div style="margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
-                            <div class="label" style="text-align:left; margin-bottom:5px;">Son Mesai Bitişi</div>
-                            <div class="time-val" style="font-size:1.2rem;">${lastShift ? lastShift.endStr : 'Kayıt Yok'}</div>
-                        </div>
-                        <div>
-                            <div class="label" style="text-align:left; margin-bottom:5px;">Gelecek Mesai Başlangıcı</div>
-                            <div class="time-val" style="font-size:1.2rem;">${nextShift ? nextShift.startStr : 'Planlanmadı'}</div>
-                        </div>
-                    `;
-                }
+                updateDisplay();
             } catch (e) {
-                statusDiv.innerText = "HATA";
-                document.getElementById('content').innerText = "Dosya veya saat hatası.";
+                document.getElementById('status').innerText = "HATA";
             }
         }
 
-        updateLiveStatus();
-        setInterval(updateLiveStatus, 30000);
+        function updateDisplay() {
+            const nowInTR = new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Istanbul"}));
+            const statusDiv = document.getElementById('status');
+            const contentDiv = document.getElementById('content');
+            const countdownDiv = document.getElementById('countdown');
+
+            if (allShifts.length === 0) return;
+
+            const currentShift = allShifts.find(s => nowInTR >= s.start && nowInTR <= s.end);
+
+            if (currentShift) {
+                statusDiv.innerText = "EVET";
+                document.body.style.backgroundColor = "#28a745";
+                const timeLeft = currentShift.end - nowInTR;
+                countdownDiv.style.display = "block";
+                countdownDiv.innerText = "Mesai Bitişine: " + formatDuration(timeLeft);
+                
+                contentDiv.innerHTML = `
+                    <div class="info-line"><span class="label">Giriş:</span><span class="time-val">${currentShift.startStr}</span></div>
+                    <div class="info-line"><span class="label">Çıkış:</span><span class="time-val">${currentShift.endStr}</span></div>
+                `;
+            } else {
+                statusDiv.innerText = "HAYIR";
+                document.body.style.backgroundColor = "#dc3545";
+
+                const pastShifts = allShifts.filter(s => nowInTR > s.end).sort((a, b) => b.end - a.end);
+                const futureShifts = allShifts.filter(s => nowInTR < s.start).sort((a, b) => a.start - b.start);
+
+                const lastShift = pastShifts[0];
+                const nextShift = futureShifts[0];
+
+                if (nextShift) {
+                    const timeToStart = nextShift.start - nowInTR;
+                    countdownDiv.style.display = "block";
+                    countdownDiv.innerText = "Yeni Mesaiye: " + formatDuration(timeToStart);
+                } else {
+                    countdownDiv.style.display = "none";
+                }
+
+                contentDiv.innerHTML = `
+                    <div style="margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+                        <div class="label" style="text-align:left; margin-bottom:3px;">Son Mesai Bitişi</div>
+                        <div class="time-val" style="font-size:1.1rem;">${lastShift ? lastShift.endStr : 'Kayıt Yok'}</div>
+                    </div>
+                    <div>
+                        <div class="label" style="text-align:left; margin-bottom:3px;">Gelecek Mesai Başlangıcı</div>
+                        <div class="time-val" style="font-size:1.1rem;">${nextShift ? nextShift.startStr : 'Planlanmadı'}</div>
+                    </div>
+                `;
+            }
+        }
+
+        loadData();
+        setInterval(updateDisplay, 1000);
     </script>
 </body>
 </html>
