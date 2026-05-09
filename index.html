@@ -7,7 +7,7 @@
     <style>
         :root {
             --bg-color: #0f0f0f;
-            --accent-color: #ff3b30;
+            --accent-color: #34c759; /* Başlangıç yeşil (Müsait) */
             --glass: rgba(255, 255, 255, 0.03);
             --text-main: #ffffff;
             --text-dim: #888888;
@@ -23,11 +23,11 @@
             overflow: hidden;
         }
 
-        /* Dil Seçici (Lang Switcher) */
         .lang-container {
             position: absolute; top: 30px;
             background: var(--glass); padding: 4px; border-radius: 12px;
             display: flex; gap: 4px; border: 1px solid rgba(255,255,255,0.05);
+            z-index: 10;
         }
         .lang-btn {
             padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer;
@@ -42,12 +42,12 @@
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 400px; height: 400px; border-radius: 50%;
             background: var(--accent-color);
-            filter: blur(100px); opacity: 0.1; z-index: -1;
+            filter: blur(100px); opacity: 0.12; z-index: -1;
             transition: all 1s ease;
         }
 
         .status-header { margin-bottom: 50px; }
-        .status-val { font-size: 4rem; font-weight: 800; letter-spacing: -2px; margin: 0; }
+        .status-val { font-size: 3.8rem; font-weight: 800; letter-spacing: -2px; margin: 0; }
         .countdown { font-size: 1.1rem; font-weight: 300; margin-top: 10px; color: var(--text-dim); }
 
         .info-card {
@@ -84,8 +84,7 @@
         <div id="countdown" class="countdown"></div>
     </div>
 
-    <div class="info-card" id="content-card">
-        </div>
+    <div class="info-card" id="content-card"></div>
 
     <div class="footer" id="footer-text">Veriler Türkiye saat dilimine göredir (UTC+3)</div>
 
@@ -129,7 +128,7 @@
             const h = Math.floor(ms / 3600000);
             const m = Math.floor((ms % 3600000) / 60000);
             const s = Math.floor((ms % 60000) / 1000);
-            return `${h}h ${m}m ${s}s`;
+            return `${h}s ${m}d ${s}sn`;
         }
 
         async function loadData() {
@@ -155,13 +154,15 @@
             document.getElementById('footer-text').innerText = t.footer;
 
             if (current) {
+                // MESAİDEYKEN: KIRMIZI/TURUNCU (Meşgul)
                 document.getElementById('status-val').innerText = t.on;
-                document.documentElement.style.setProperty('--accent-color', '#34c759');
+                document.documentElement.style.setProperty('--accent-color', '#ff3b30');
                 document.getElementById('countdown').innerText = t.endIn + formatDuration(current.end - now);
                 renderCard(t.start, current.sD, current.sT, t.end, current.eD, current.eT);
             } else {
+                // MÜSAİTKEN: YEŞİL (Ulaşılabilir)
                 document.getElementById('status-val').innerText = t.off;
-                document.documentElement.style.setProperty('--accent-color', '#ff3b30');
+                document.documentElement.style.setProperty('--accent-color', '#34c759');
                 const next = allShifts.filter(s => now < s.start).sort((a,b) => a.start - b.start)[0];
                 const last = allShifts.filter(s => now > s.end).sort((a,b) => b.end - a.end)[0];
                 document.getElementById('countdown').innerText = next ? t.nextIn + formatDuration(next.start - now) : "";
