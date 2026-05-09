@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barış Şu An Çalışıyor mu?</title>
+    <title>Barış Şu An Çalışıyor mu? | Is Barış Working Now?</title>
     <style>
         body {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -11,12 +11,12 @@
             text-align: center; transition: background-color 0.8s ease;
             background-color: #333;
         }
-        .status-title { font-size: 1.8rem; margin-bottom: 0; opacity: 0.9; }
+        .status-title { font-size: 1.6rem; margin-bottom: 0; opacity: 0.9; line-height: 1.2; }
         .status-value { font-size: 7rem; font-weight: 900; margin: 5px 0; letter-spacing: -2px; }
         
         .countdown-container {
-            font-size: 1.5rem; font-weight: 600; margin-bottom: 20px;
-            background: rgba(255, 255, 255, 0.15); padding: 10px 20px; border-radius: 50px;
+            font-size: 1.4rem; font-weight: 600; margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.15); padding: 10px 25px; border-radius: 50px;
         }
 
         .info-card {
@@ -24,25 +24,33 @@
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             min-width: 320px; border: 1px solid rgba(255,255,255,0.1);
         }
-        .info-line { font-size: 1rem; margin: 10px 0; display: flex; justify-content: space-between; }
-        .label { font-weight: bold; opacity: 0.7; font-size: 0.8rem; text-transform: uppercase; }
-        .time-val { font-family: 'Courier New', monospace; font-weight: bold; }
+        .info-line { font-size: 1rem; margin: 12px 0; display: flex; justify-content: space-between; align-items: center; }
+        .label-group { text-align: left; display: flex; flex-direction: column; }
+        .label-tr { font-weight: bold; opacity: 0.9; font-size: 0.85rem; text-transform: uppercase; }
+        .label-en { font-weight: normal; opacity: 0.6; font-size: 0.7rem; text-transform: uppercase; }
+        
+        .time-val { font-family: 'Courier New', monospace; font-weight: bold; font-size: 1.1rem; }
+        
         .timezone-badge {
             margin-top: 15px; font-size: 0.7rem; opacity: 0.5; font-style: italic;
             border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;
+            display: flex; flex-direction: column; gap: 2px;
         }
     </style>
 </head>
 <body>
 
-    <p class="status-title">Barış şu an çalışıyor mu?</p>
+    <p class="status-title">Barış şu an çalışıyor mu?<br><span style="font-size: 1.2rem; opacity: 0.7;">Is Barış working now?</span></p>
     <div id="status" class="status-value">...</div>
 
     <div id="countdown" class="countdown-container" style="display: none;"></div>
 
     <div id="card" class="info-card">
-        <div id="content">Veriler yükleniyor...</div>
-        <div class="timezone-badge">Veriler Türkiye saat dilimine (UTC+3) göredir.</div>
+        <div id="content">Veriler yükleniyor... / Loading data...</div>
+        <div class="timezone-badge">
+            <span>Veriler Türkiye saat dilimine (UTC+3) göredir.</span>
+            <span>Data is based on Turkey time zone (UTC+3).</span>
+        </div>
     </div>
 
     <script>
@@ -65,7 +73,6 @@
 
         async function loadData() {
             try {
-                // TAM İSTEDİĞİN GİBİ: Gecikmeyi önleyen dinamik URL
                 const response = await fetch('schedule.csv?v=' + new Date().getTime());
                 const text = await response.text();
                 const rows = text.split('\n').slice(1).filter(r => r.trim() !== "");
@@ -82,7 +89,7 @@
                 
                 updateDisplay();
             } catch (e) {
-                document.getElementById('status').innerText = "HATA";
+                document.getElementById('status').innerText = "HATA / ERROR";
             }
         }
 
@@ -97,18 +104,24 @@
             const currentShift = allShifts.find(s => nowInTR >= s.start && nowInTR <= s.end);
 
             if (currentShift) {
-                statusDiv.innerText = "EVET";
+                statusDiv.innerText = "EVET / YES";
                 document.body.style.backgroundColor = "#28a745";
                 const timeLeft = currentShift.end - nowInTR;
                 countdownDiv.style.display = "block";
-                countdownDiv.innerText = "Mesai Bitişine: " + formatDuration(timeLeft);
+                countdownDiv.innerText = "Bitiş / End: " + formatDuration(timeLeft);
                 
                 contentDiv.innerHTML = `
-                    <div class="info-line"><span class="label">Giriş:</span><span class="time-val">${currentShift.startStr}</span></div>
-                    <div class="info-line"><span class="label">Çıkış:</span><span class="time-val">${currentShift.endStr}</span></div>
+                    <div class="info-line">
+                        <div class="label-group"><span class="label-tr">Giriş</span><span class="label-en">Shift Start</span></div>
+                        <span class="time-val">${currentShift.startStr}</span>
+                    </div>
+                    <div class="info-line">
+                        <div class="label-group"><span class="label-tr">Çıkış</span><span class="label-en">Shift End</span></div>
+                        <span class="time-val">${currentShift.endStr}</span>
+                    </div>
                 `;
             } else {
-                statusDiv.innerText = "HAYIR";
+                statusDiv.innerText = "HAYIR / NO";
                 document.body.style.backgroundColor = "#dc3545";
 
                 const pastShifts = allShifts.filter(s => nowInTR > s.end).sort((a, b) => b.end - a.end);
@@ -120,19 +133,19 @@
                 if (nextShift) {
                     const timeToStart = nextShift.start - nowInTR;
                     countdownDiv.style.display = "block";
-                    countdownDiv.innerText = "Yeni Mesaiye: " + formatDuration(timeToStart);
+                    countdownDiv.innerText = "Giriş / Start in: " + formatDuration(timeToStart);
                 } else {
                     countdownDiv.style.display = "none";
                 }
 
                 contentDiv.innerHTML = `
                     <div style="margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
-                        <div class="label" style="text-align:left; margin-bottom:3px;">Son Mesai Bitişi</div>
-                        <div class="time-val" style="font-size:1.1rem;">${lastShift ? lastShift.endStr : 'Kayıt Yok'}</div>
+                        <div class="label-group"><span class="label-tr">Son Mesai Bitişi</span><span class="label-en">Last Shift Ended</span></div>
+                        <div class="time-val" style="text-align:right;">${lastShift ? lastShift.endStr : '-'}</div>
                     </div>
                     <div>
-                        <div class="label" style="text-align:left; margin-bottom:3px;">Gelecek Mesai Başlangıcı</div>
-                        <div class="time-val" style="font-size:1.1rem;">${nextShift ? nextShift.startStr : 'Planlanmadı'}</div>
+                        <div class="label-group"><span class="label-tr">Gelecek Mesai</span><span class="label-en">Next Shift Starts</span></div>
+                        <div class="time-val" style="text-align:right;">${nextShift ? nextShift.startStr : '-'}</div>
                     </div>
                 `;
             }
