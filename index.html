@@ -13,7 +13,6 @@
         }
         .status-title { font-size: 1.4rem; margin-bottom: 0; opacity: 0.8; line-height: 1.2; }
         
-        /* Boyut küçültüldü: 7rem -> 4.5rem */
         .status-value { 
             font-size: 4.5rem; 
             font-weight: 900; 
@@ -36,7 +35,7 @@
         .info-line { font-size: 1rem; margin: 12px 0; display: flex; justify-content: space-between; align-items: center; }
         .label-group { text-align: left; display: flex; flex-direction: column; }
         .label-tr { font-weight: bold; opacity: 0.9; font-size: 0.8rem; text-transform: uppercase; }
-        .label-en { font-weight: normal; opacity: 0.6; font-size: 0.65rem; text-transform: uppercase; }
+        .label-en { font-weight: normal; opacity: 0.6; font-size: 0.65rem; }
         
         .time-val { font-family: 'Courier New', monospace; font-weight: bold; font-size: 1.1rem; }
         
@@ -117,7 +116,7 @@
                 document.body.style.backgroundColor = "#28a745";
                 const timeLeft = currentShift.end - nowInTR;
                 countdownDiv.style.display = "block";
-                countdownDiv.innerText = "Bitiş / End: " + formatDuration(timeLeft);
+                countdownDiv.innerText = "Mesai Sonu / Shift End: " + formatDuration(timeLeft);
                 
                 contentDiv.innerHTML = `
                     <div class="info-line">
@@ -142,7 +141,8 @@
                 if (nextShift) {
                     const timeToStart = nextShift.start - nowInTR;
                     countdownDiv.style.display = "block";
-                    countdownDiv.innerText = "Giriş / Start in: " + formatDuration(timeToStart);
+                    // Yeni ve daha net ifade:
+                    countdownDiv.innerText = "Gelecek Mesai / Next Shift in: " + formatDuration(timeToStart);
                 } else {
                     countdownDiv.style.display = "none";
                 }
