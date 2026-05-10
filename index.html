@@ -23,7 +23,6 @@
             overflow: hidden;
         }
 
-        /* Dil Seçici */
         .lang-container {
             position: absolute; top: 30px;
             background: rgba(255, 255, 255, 0.08); padding: 4px; border-radius: 12px;
@@ -39,13 +38,12 @@
             background: white; color: black;
         }
 
-        /* Işık Hüzmesi (Glow) */
         .bg-glow {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 650px; height: 650px; border-radius: 50%;
             background: var(--accent-color);
             filter: blur(140px); 
-            opacity: 0.28; /* Daha canlı görünüm */
+            opacity: 0.28;
             z-index: -1;
             transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -103,14 +101,16 @@
                 nextIn: "Gelecek mesaiye: ", endIn: "Mesai bitimine: ",
                 last: "Son Mesai Bitişi", next: "Gelecek Mesai Başlangıcı",
                 start: "Mesai Başlangıcı", end: "Mesai Bitişi",
-                footer: "Veriler Türkiye saat dilimine göredir (UTC+3)"
+                footer: "Veriler Türkiye saat dilimine göredir (UTC+3)",
+                h: "s", m: "d", s: "sn"
             },
             en: {
                 on: "ON SHIFT", off: "AVAILABLE",
                 nextIn: "Next shift in: ", endIn: "Shift ends in: ",
                 last: "Last Shift Ended", next: "Next Shift Starts",
                 start: "Shift Start", end: "Shift End",
-                footer: "Data is based on Turkey time zone (UTC+3)"
+                footer: "Data is based on Turkey time zone (UTC+3)",
+                h: "h", m: "min", s: "sec"
             }
         };
 
@@ -132,7 +132,8 @@
             const h = Math.floor(ms / 3600000);
             const m = Math.floor((ms % 3600000) / 60000);
             const s = Math.floor((ms % 60000) / 1000);
-            return `${h}s ${m}d ${s}sn`;
+            const t = translations[currentLang];
+            return `${h}${t.h} ${m}${t.m} ${s}${t.s}`;
         }
 
         async function loadData() {
@@ -160,14 +161,12 @@
             document.getElementById('footer-text').innerText = t.footer;
 
             if (current) {
-                // MESAİDE: Canlı Kırmızı Glow ve Koyu Kırmızı Arka Plan
                 document.getElementById('status-val').innerText = t.on;
                 document.documentElement.style.setProperty('--accent-color', '#ff453a');
                 document.body.style.backgroundColor = "#140a0a"; 
                 document.getElementById('countdown').innerText = t.endIn + formatDuration(current.end - now);
                 renderCard(t.start, current.sD, current.sT, t.end, current.eD, current.eT);
             } else {
-                // MÜSAİT: Canlı Yeşil Glow ve Koyu Yeşil Arka Plan
                 document.getElementById('status-val').innerText = t.off;
                 document.documentElement.style.setProperty('--accent-color', '#32d74b');
                 document.body.style.backgroundColor = "#0a140b"; 
