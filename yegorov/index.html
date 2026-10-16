@@ -34,6 +34,8 @@ h2{font-size:clamp(2.2rem,5.2vw,4.4rem);line-height:1.02;margin:.2rem 0 1rem;let
 .m{fill:var(--mute);font:12px system-ui,sans-serif}
 .w{fill:#fff;font:600 13px system-ui,sans-serif}
 .big{fill:var(--fg);font:800 34px system-ui,sans-serif}
+.pl{fill:#fff;font:700 12px system-ui,sans-serif;letter-spacing:.04em}
+.pc{fill:#cfe2f8;font:600 8px system-ui,sans-serif;letter-spacing:.08em}
 #cue{position:absolute;left:6vw;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);color:var(--mute);font-size:.85rem;letter-spacing:.15em;animation:b 1.6s ease-in-out infinite}
 @keyframes b{50%{transform:translateY(6px)}}
 footer{padding:12vh 6vw 14vh;text-align:center;border-top:1px solid var(--line)}
@@ -159,7 +161,9 @@ const cabs=[0,1,2].map(i=>{const x=36+i*188;
  const door=h('g',{},s);
  h('rect',{width:140,height:340,rx:8,fill:'#2b5f9e',stroke:'#7fb0ea','stroke-width':2},door);
  h('rect',{x:112,y:150,width:8,height:44,rx:3,fill:'#dbe8f7'},door);
- h('text',{x:70,y:60,class:'w','text-anchor':'middle'},door,'YEGOROV');
+ h('rect',{x:12,y:18,width:116,height:56,rx:6,fill:'#0b2a52',stroke:'#7fb0ea','stroke-width':1.5},door);
+ [['ANA DAĞITIM','PANOSU'],['MCC','PANOSU'],['KOMPANZASYON','PANOSU']][i].forEach((l,k)=>h('text',{x:70,y:42+k*18,class:'pl','text-anchor':'middle'},door,l));
+ h('text',{x:10,y:328,class:'pc'},door,'Yegorov Mühendislik');
  return{door,br,x}});
 return a=>{
  cabs.forEach((c,i)=>{const d=E(C((a-.06-i*.14)/.3));c.door.setAttribute('transform',`translate(${c.x},100) scale(${1-.9*d},1)`);
@@ -220,4 +224,3 @@ read();cp=tp;frame();
 </script>
 </body>
 </html>
-
