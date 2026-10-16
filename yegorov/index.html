@@ -36,6 +36,8 @@ h2{font-size:clamp(2.2rem,5.2vw,4.4rem);line-height:1.02;margin:.2rem 0 1rem;let
 .big{fill:var(--fg);font:800 34px system-ui,sans-serif}
 .pl{fill:#fff;font:700 12px system-ui,sans-serif;letter-spacing:.04em}
 .pc{fill:#cfe2f8;font:600 8px system-ui,sans-serif;letter-spacing:.08em}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#track,footer{position:relative;z-index:1}
 #cue{position:absolute;left:6vw;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);color:var(--mute);font-size:.85rem;letter-spacing:.15em;animation:b 1.6s ease-in-out infinite}
 @keyframes b{50%{transform:translateY(6px)}}
 footer{padding:12vh 6vw 14vh;text-align:center;border-top:1px solid var(--line)}
@@ -47,6 +49,7 @@ footer small{display:block;margin-top:2rem;color:var(--mute)}
 </style>
 </head>
 <body>
+<canvas id="bg" aria-hidden="true"></canvas>
 <header><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M3 3l10 12L23 3M13 15v9" fill="none" stroke="var(--acc)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="logo">YEGOROV <b>MÜHENDİSLİK</b></span></header>
 <nav id="rail" aria-label="Bölümler"></nav>
 
@@ -221,6 +224,52 @@ function frame(){
  requestAnimationFrame(frame)}
 addEventListener('scroll',read,{passive:true});addEventListener('resize',read);
 read();cp=tp;frame();
+
+/* Çakıl taşı mozaik arka plan */
+(()=>{
+const cv=document.getElementById('bg'),cx=cv.getContext('2d'),root=document.documentElement,dm=matchMedia('(prefers-color-scheme: dark)');
+const R=150;let W=0,H=0,dpr=1,P=[],mx=-9999,my=-9999,pmx=-9999,pmy=-9999,vx=0,vy=0,dirty=true,live=false,dark=null,pal,sy=scrollY;
+const dk=()=>root.dataset.theme==='dark'||(root.dataset.theme!=='light'&&dm.matches);
+function palette(){dark=dk();const f=[],w=[];
+ for(let i=0;i<8;i++){const t=i/7;f.push(dark?`hsl(212 28% ${11+t*9}%)`:`hsl(212 14% ${80+t*11}%)`)}
+ for(let i=0;i<4;i++){const t=i/3;w.push(dark?`hsl(36 25% ${15+t*4}%)`:`hsl(34 22% ${82+t*8}%)`)}
+ pal={f,w,hi:dark?'rgba(255,255,255,.05)':'rgba(255,255,255,.6)',ed:dark?'rgba(0,0,0,.4)':'rgba(15,30,50,.09)',acc:getComputedStyle(root).getPropertyValue('--acc').trim()||'#e59a00'};dirty=true}
+function build(){W=innerWidth;H=innerHeight;dpr=Math.min(2,devicePixelRatio||1);cv.width=W*dpr;cv.height=H*dpr;
+ const s=W<700?34:46,cols=Math.ceil(W/s)+1,rows=Math.ceil(H/(s*.86))+1;P=[];
+ for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+  const rx=s*(.46+Math.random()*.1);
+  P.push({x:c*s+(r%2?s/2:0)+(Math.random()-.5)*s*.3,y:r*s*.86+(Math.random()-.5)*s*.25,rx,ry:rx*(.68+Math.random()*.2),a:Math.random()*Math.PI,ox:0,oy:0,oa:0,vx:0,vy:0,va:0,h:0,c:Math.random()<.14?-1-(Math.random()*4|0):(Math.random()*8|0)})}
+ dirty=true}
+function draw(){cx.setTransform(1,0,0,1,0,0);cx.clearRect(0,0,cv.width,cv.height);
+ for(const p of P){const X=p.x+p.ox,Y=p.y+p.oy;if(X<-60||X>W+60||Y<-60||Y>H+60)continue;
+  const t=p.a+p.oa,co=Math.cos(t)*dpr,si=Math.sin(t)*dpr;cx.setTransform(co,si,-si,co,X*dpr,Y*dpr);
+  cx.beginPath();cx.ellipse(0,0,p.rx,p.ry,0,0,6.2832);cx.fillStyle=p.c>=0?pal.f[p.c]:pal.w[-p.c-1];cx.fill();
+  cx.lineWidth=1.5;cx.strokeStyle=pal.ed;cx.stroke();
+  cx.beginPath();cx.ellipse(-p.rx*.18,-p.ry*.3,p.rx*.5,p.ry*.28,-.2,0,6.2832);cx.fillStyle=pal.hi;cx.fill();
+  if(p.h>.03){cx.globalAlpha=Math.min(.4,p.h*.35);cx.beginPath();cx.ellipse(0,0,p.rx,p.ry,0,0,6.2832);cx.fillStyle=pal.acc;cx.fill();cx.globalAlpha=1}}}
+function step(){let mv=false;vx*=.8;vy*=.8;
+ for(const p of P){const dx=p.x-mx,dy=p.y-my,d2=dx*dx+dy*dy;
+  if(d2<R*R){const d=Math.sqrt(d2)||1,g=(1-d/R)*(1-d/R);
+   p.vx+=dx/d*g*1.6+vx*g*.08;p.vy+=dy/d*g*1.6+vy*g*.08;p.va+=(dx*vy-dy*vx)/d*g*.012;p.h=Math.max(p.h,g*1.2)}
+  p.vx=(p.vx-p.ox*.06)*.82;p.vy=(p.vy-p.oy*.06)*.82;p.va=(p.va-p.oa*.05)*.85;
+  p.ox+=p.vx;p.oy+=p.vy;p.oa+=p.va;p.h*=.93;
+  if(Math.abs(p.vx)+Math.abs(p.vy)+Math.abs(p.va)>.002||Math.abs(p.ox)+Math.abs(p.oy)>.02||p.h>.03)mv=true}
+ return mv}
+function loop(){if(dark!==dk())palette();
+ if(live){live=step();dirty=true}
+ if(dirty){draw();dirty=false}
+ requestAnimationFrame(loop)}
+const rst=()=>{mx=my=pmx=pmy=-9999;live=!reduce};
+if(!reduce){
+ addEventListener('pointermove',e=>{const f=pmx<-999;vx=f?0:C(e.clientX-pmx,-40,40);vy=f?0:C(e.clientY-pmy,-40,40);pmx=mx=e.clientX;pmy=my=e.clientY;live=true},{passive:true});
+ addEventListener('pointercancel',rst);addEventListener('pointerup',e=>{if(e.pointerType!=='mouse')rst()});
+ root.addEventListener('mouseleave',rst);
+ addEventListener('scroll',()=>{const d=scrollY-sy;sy=scrollY;if(!d)return;for(const p of P)p.va+=Math.sin(p.x*.02+p.y*.01)*C(d,-60,60)*.0012;live=true},{passive:true});
+}
+addEventListener('resize',()=>{if(innerWidth!==W||Math.abs(innerHeight-H)>150)build()});
+dm.addEventListener('change',palette);
+palette();build();loop();
+})();
 </script>
 </body>
 </html>
